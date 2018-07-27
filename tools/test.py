@@ -10,6 +10,7 @@ import re
 import urllib
 import urllib2
 import sys
+import random
 
 #改变图片分辨率（因为手机图片发送到电脑截图与原分辨率不同）
 def resize_image(input_image,out_image,width,height,type):
@@ -19,12 +20,11 @@ def resize_image(input_image,out_image,width,height,type):
 
 
 #从手机截屏，并发送到电脑
-#新方案，电脑安装投影软件，更快
 def get_now_picture():
-    os.popen("adb shell screencap -p /sdcard/screen.png")
-    os.popen("adb pull /sdcard/screen.png")
+    os.popen("adb -s bd5c889 shell screencap -p /sdcard/screen.png")
+    os.popen("adb -s bd5c889 pull /sdcard/screen.png")
     #改变图片分辨率
-    resize_image('screen.png','screen_out.png',430,760,'png')
+    resize_image('screen.png','screen_out.png',516,919,'png')
 
 #    bbox = (10, 60, 525, 990)
 #    img = ImageGrab.grab(bbox)
@@ -33,10 +33,10 @@ def get_now_picture():
 #获取手机需要被点击的点(返回为需要点击的手机坐标的高宽数组)
 def get_phone_point(pos):
     #手机分辨率与图片分辨率，如更改，需修改
-    phone_heigh = 1920.0
-    phone_width = 1080.0
-    picture_height = 760
-    picture_width = 430
+    phone_heigh = 1280.0
+    phone_width = 720.0
+    picture_height = 919
+    picture_width = 516
     resolution_list = []
     
     #获取匹配出的中心点
@@ -64,40 +64,27 @@ def compare(source_picture,goal):
 #对手机进行操作
 def phone_handle(handle,argument):
     if handle == "click":
-        os.popen("adb shell input tap {x} {y}".format(x=argument[1],y=argument[0]) )
+        os.popen("adb -s bd5c889 shell input tap {x} {y}".format(x=argument[1],y=argument[0]) )
     elif handle == 'insert':
-        num_arry=[7,8,9,10,11,12,13,14,15,16]
-        argu_leng = len(argument)
-        for num in range(argu_leng):
-            send_num = int(argument[num])            
-            os.popen('adb shell input keyevent {date}'.format(date=num_arry[send_num]))
+#        num_arry=[7,8,9,10,11,9,13,14,15,16]
+#        argu_leng = len(argument)
+#        for num in range(argu_leng):
+#            send_num = int(argument[num])            
+#            os.popen('adb shell input keyevent {date}'.format(date=num_arry[send_num]))
+        os.popen('adb -s bd5c889 shell input text {x}'.format(x=argument))
     elif handle == 'keyevent':
-        os.popen("adb shell input keyevent {x}".format(x=argument) )
+        os.popen("adb -s bd5c889 shell input keyevent {x}".format(x=argument) )
+    elif handle == 'swap':
+        os.popen('adb -s bd5c889 shell input swipe {x} {y} {x1} {y1} {z}'.format(x=argument[0],y=argument[1],x1=argument[2],y1=argument[3],z=argument[4]))
         
-    
-#对匹配的图片进行画圆，方便调试，看是否找对
-def draw_circle(img, pos, circle_radius, color, line_width):
-    cv2.circle(img, pos, circle_radius, color, line_width)
-    cv2.imshow('objDetect', imsrc) 
-    cv2.waitKey(1)
-    cv2.destroyAllWindows()
-
-
-#打开图片并关闭，目的是为了关闭图像流，这个坑爹的作者仿佛没有写关闭图像的接口，
-#导致读取第一张图后后面的也全部与第一张图片匹配
-def close_picture(pictur_name):
-    imsrc = ac.imread(pictur_name)
-    cv2.imshow('objDetect', imsrc) 
-    cv2.waitKey(1)
-    cv2.destroyAllWindows()
 
 #随机机型选择
 def phone_choice():
     brand = random.randint(0,16)
-    brand_point = brand*90+380
+    brand_point = brand*90+200
     model = random.randint(0,13)
-    model_point = model*90+410
-    choice_point = [534,brand_point,534,model_point]
+    model_point = model*90+270
+    choice_point = [347,brand_point,347,model_point]
     return choice_point
 
 
@@ -117,7 +104,7 @@ def log_in():
     return token
 
 #获取手机号码
-def get_phone_number(token,project_id):
+def get_phone_number(project_id):
     url ='http://api.ixinsms.com/api/do.php?action=getPhone&sid={x}&token={y}'.format(x=project_id,y=token)
     while 2<3:
         req = urllib2.Request(url)
@@ -132,22 +119,21 @@ def get_phone_number(token,project_id):
     return phon_number
 
 #获取短信
-def get_message(token,project_id):
-    url ='http://api.ixinsms.com/api/do.php?action=getMessage&sid={x}id&phone={y}'.format(x=project_id,y=token)
+def get_message(phone_number,project_id):
+    url ='http://api.ixinsms.com/api/do.php?action=getMessage&sid={x}&phone={y}&token={z}'.format(x=project_id,y=phone_number,z=token)
     while 2<3:
         req = urllib2.Request(url)
         res_data = urllib2.urlopen(req)
         res = res_data.read()
-        ree = re.compile('(\d)\|(\w+)')
+        ree = re.compile('(\d+)')
         match = ree.findall(res)
-        if match[0][0] == '1':
+        if match[0] == '1':
             break
         time.sleep(2)
         print "waiting message"
     print "get message success"
-    message = match[0][1]
+    message = match[1]
     return message
-
 
 
 #检查下一步的图片是否出现
@@ -158,6 +144,9 @@ def if_next(goal,wait_time):
     while not pos:
         if num == wait_time :
             print 'no next picture'
+            print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+            print id
+            os.exit()
             return 'false'
         no_match = "try next {x}".format(x=num)
         print no_match
@@ -168,32 +157,69 @@ def if_next(goal,wait_time):
     return get_phone_point(pos)
 
 
+#登录判断标志
+logged = 0
+#获取的token，重复使用
+token = "im first"
+#项目id
+project_id = 24239
+#邀请码
+invite_number = 2278898
 
 if __name__ == "__main__":
-  
-    for  height in range(0,5) :
-        for withd in range(0,4):            
-            point_height = 220+(height*294.5)
-            point_width = 168+(withd*252)
-            phone_point = [point_height,point_width]
-            phone_handle("click",phone_point)
-            print phone_point
 
-            phone_point = if_next('no.png',20)
-            if phone_point == 'false':
-                phone_handle("keyevent",7)
-                print "return no match111"
-            else:
-                phone_handle("click",phone_point)
+    print "get number begain"
+    if logged == 0:
+        token = log_in()
+        logged = 1
+    phone_number = get_phone_number(project_id)
 
-            if if_next('return_main.png',3) != "false":
-                phone_handle("keyevent",7)
-                print 'home'
-            else:
-                phone_handle("keyevent",3)
-                print 'not home'
-            time.sleep(2)
-            print 'over'
-    print 'complet'
+    phone_point = if_next('phone_number.png', 50)
+    phone_handle("click",phone_point)
+    print "insert number"
+    phone_handle("insert",phone_number)
 
-  
+    print "send message"    
+    get_now_picture() 
+    phone_point = if_next('send.png', 50)
+    phone_handle("click",phone_point)
+    phone_point = if_next('if_swap.png', 50)
+    time.sleep(1)
+    
+    pos = compare('screen_out.png','if_swap.png')   
+    while pos != None :
+        swap_road = [215,830,510,830,2000]
+        phone_handle("swap",swap_road)
+        get_now_picture()
+        pos = compare('screen_out.png','if_swap.png')
+
+    print "insert invite"
+    phone_point = if_next('invite.png', 50)
+    phone_handle("click",phone_point)
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
+    phone_handle("insert",invite_number)
+
+    print "waite message"
+    message = get_message(phone_number,project_id)
+    phone_point = if_next('security.png', 50)
+    phone_handle("click",phone_point)
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
+    phone_handle("insert",message)
+    
+    phone_point = if_next('login.png', 50)
+    phone_handle("click",phone_point)
+    time.sleep(1)
+    
+    
+    
+    
+    
+    print num
+    print "                                            over"
+    
+    print "return"
+    phone_handle('keyevent','82')
+    phone_point = if_next('return.png', 50)
+    phone_handle("click",phone_point)

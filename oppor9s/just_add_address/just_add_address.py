@@ -77,22 +77,7 @@ def phone_handle(handle,argument):
     elif handle == 'swap':
         os.popen('adb -s 86e2ca1a shell input swipe {x} {y} {x1} {y1} {z}'.format(x=argument[0],y=argument[1],x1=argument[2],y1=argument[3],z=argument[4]))
         
-    
-#对匹配的图片进行画圆，方便调试，看是否找对
-def draw_circle(img, pos, circle_radius, color, line_width):
-    cv2.circle(img, pos, circle_radius, color, line_width)
-    cv2.imshow('objDetect', imsrc) 
-    cv2.waitKey(1)
-    cv2.destroyAllWindows()
 
-
-#打开图片并关闭，目的是为了关闭图像流，这个坑爹的作者仿佛没有写关闭图像的接口，
-#导致读取第一张图后后面的也全部与第一张图片匹配
-def close_picture(pictur_name):
-#    imsrc = ac.imread(pictur_name)
-#    cv2.imshow('objDetect', imsrc) 
-#    cv2.waitKey(1)
-#    cv2.destroyAllWindows()
     xxxxxl = 1
 
 #随机机型选择
@@ -258,30 +243,22 @@ if __name__ == "__main__":
                     phone_point_compare = if_next('creat.png', 50)
                 time.sleep(1)
                 phone_handle("click", phone_point)
-                close_picture('screen_out.png')
-                close_picture('creat.png')
                 print 'creat over'
 
             else:
                 get_now_picture()
                 phone_point = if_next('diandian.png', 10)
                 phone_handle("click", phone_point)
-                close_picture('screen_out.png')
-                close_picture('diandian.png')
                 print 'diandian over'
 
                 get_now_picture()
                 phone_point = if_next('creat2.png',10)
                 phone_handle("click",phone_point)
-                close_picture('screen_out.png')
-                close_picture('creat2.png')
                 print 'creat2 over'
 
             get_now_picture()
             phone_point = if_next('skip.png',10)
             phone_handle("click",phone_point)
-            close_picture('screen_out.png')
-            close_picture('skip.png')
             print 'skip over'
 
             get_now_picture()
@@ -291,8 +268,6 @@ if __name__ == "__main__":
             phone_handle("click",phone_point)
             phone_handle('insert',flag_name)
             flag_name += 1
-            close_picture('screen_out.png')
-            close_picture('name.png')
             print 'name over'
                 
             phone_point = if_next('password.png',10)
@@ -306,8 +281,6 @@ if __name__ == "__main__":
 #                os.popen('adb -s 9c9a817b shell input text {x}'.format(x=password[str]))
                 phone_handle('insert',password[str])
                 str += 1
-            close_picture('screen_out.png')
-            close_picture('password.png')
             print 'password over'
 
             phone_point = if_next('repassword.png',10)
@@ -320,30 +293,22 @@ if __name__ == "__main__":
 #                os.popen('adb -s 9c9a817b shell input text {x}'.format(x=password[str]))
                 phone_handle('insert',password[str])
                 str += 1
-            close_picture('screen_out.png')
-            close_picture('repassword.png')
             print 'repassword over'
 
             get_now_picture()
             phone_point = if_next('read.png',10)
             phone_handle("click",phone_point)
-            close_picture('screen_out.png')
-            close_picture('read.png')
             print 'read over'
 
             get_now_picture()
             phone_point = if_next('sure_creat.png',10)
             phone_handle("click",phone_point)
-            close_picture('screen_out.png')
-            close_picture('sure_creat.png')
             print 'sure_creat over'
             time.sleep(1)
 
             get_now_picture()
             phone_point = if_next('back.png',20)
             phone_handle("click",phone_point)
-            close_picture('screen_out.png')
-            close_picture('back.png')
             print 'back over'
 #            time.sleep(2)
 
