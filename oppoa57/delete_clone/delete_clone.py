@@ -10,7 +10,6 @@ import re
 import urllib
 import urllib2
 import sys
-import random
 
 #改变图片分辨率（因为手机图片发送到电脑截图与原分辨率不同）
 def resize_image(input_image,out_image,width,height,type):
@@ -20,6 +19,7 @@ def resize_image(input_image,out_image,width,height,type):
 
 
 #从手机截屏，并发送到电脑
+#新方案，电脑安装投影软件，更快
 def get_now_picture():
     os.popen("adb -s bd5c889 shell screencap -p /sdcard/screen.png")
     os.popen("adb -s bd5c889 pull /sdcard/screen.png")
@@ -77,14 +77,31 @@ def phone_handle(handle,argument):
     elif handle == 'swap':
         os.popen('adb -s bd5c889 shell input swipe {x} {y} {x1} {y1} {z}'.format(x=argument[0],y=argument[1],x1=argument[2],y1=argument[3],z=argument[4]))
         
+    
+#对匹配的图片进行画圆，方便调试，看是否找对
+def draw_circle(img, pos, circle_radius, color, line_width):
+    cv2.circle(img, pos, circle_radius, color, line_width)
+    cv2.imshow('objDetect', imsrc) 
+    cv2.waitKey(1)
+    cv2.destroyAllWindows()
+
+
+#打开图片并关闭，目的是为了关闭图像流，这个坑爹的作者仿佛没有写关闭图像的接口，
+#导致读取第一张图后后面的也全部与第一张图片匹配
+def close_picture(pictur_name):
+#    imsrc = ac.imread(pictur_name)
+#    cv2.imshow('objDetect', imsrc) 
+#    cv2.waitKey(1)
+#    cv2.destroyAllWindows()
+    xxxxxl = 1
 
 #随机机型选择
 def phone_choice():
     brand = random.randint(0,16)
-    brand_point = brand*90+200
+    brand_point = brand*90+380
     model = random.randint(0,13)
-    model_point = model*90+270
-    choice_point = [347,brand_point,347,model_point]
+    model_point = model*90+410
+    choice_point = [534,brand_point,534,model_point]
     return choice_point
 
 
@@ -104,7 +121,7 @@ def log_in():
     return token
 
 #获取手机号码
-def get_phone_number(project_id):
+def get_phone_number(token,project_id):
     url ='http://api.ixinsms.com/api/do.php?action=getPhone&sid={x}&token={y}'.format(x=project_id,y=token)
     while 2<3:
         req = urllib2.Request(url)
@@ -119,21 +136,22 @@ def get_phone_number(project_id):
     return phon_number
 
 #获取短信
-def get_message(phone_number,project_id):
-    url ='http://api.ixinsms.com/api/do.php?action=getMessage&sid={x}&phone={y}&token={z}'.format(x=project_id,y=phone_number,z=token)
+def get_message(token,project_id):
+    url ='http://api.ixinsms.com/api/do.php?action=getMessage&sid={x}id&phone={y}'.format(x=project_id,y=token)
     while 2<3:
         req = urllib2.Request(url)
         res_data = urllib2.urlopen(req)
         res = res_data.read()
-        ree = re.compile('(\d+)')
+        ree = re.compile('(\d)\|(\w+)')
         match = ree.findall(res)
-        if match[0] == '1':
+        if match[0][0] == '1':
             break
         time.sleep(2)
         print "waiting message"
     print "get message success"
-    message = match[1]
+    message = match[0][1]
     return message
+
 
 
 #检查下一步的图片是否出现
@@ -156,47 +174,114 @@ def if_next(goal,wait_time):
         pos = compare('screen_out.png',goal)
     return get_phone_point(pos)
 
+def delete_clone(start,stop,page):
+    start_x = start%10
+    start_y = start/10
+    stop_x = stop%10
+    stop_y = stop/10
+    print start_x
+    print start_y
+    print stop_x
+    print stop_y
 
-#登录判断标志
-logged = 0
-#获取的token，重复使用
-token = "im first"
-#项目id
-project_id = 24239
-#邀请码
-invite_number = 2278898
+    base_x = 100
+    base_y = 125
+    add_x  = 145
+    add_y  = 167
+
+    #判断是不是第一次删除的标志位，翻页进入新页面时使用
+    begin = 1
+    #判断是不是只有一页的标志位，删除最后一页时使用
+    just_one_page = 1
+
+    while page != 0 :
+        #删除最后一页
+        if page == 1 :
+            if just_one_page == 1:
+                count_x = start_x
+                count_y = start_y
+            else :
+                count_x = 4
+                count_y = 5
+            while count_y != 0 :
+                while count_x != 0 :
+                    now_delete_x = base_x + add_x*(count_x-1)
+                    now_delete_y = base_y + add_y*(count_y-1)
+                    point = [now_delete_y,now_delete_x]
+                    print point
+                    print count_x
+                    print count_y
+                    phone_handle("click",point)
+
+                    phone_point = if_next('delete.png', 50)
+                    phone_handle("click",phone_point)
+
+                    get_now_picture()
+                    pos = compare('screen_out.png','delete.png')
+                    while pos :
+                        get_now_picture()
+                        pos = compare('screen_out.png','delete.png')
+                    
+                    print 'stop'
+                    print stop_x
+                    print stop_y
+                    print count_x
+                    print count_y
+                    if count_x == stop_x and count_y == stop_y :
+                        print "delete over"
+                        quit()
+
+                    count_x = count_x-1
+
+                count_x = 4                
+                count_y = count_y-1
+        #没到最后一页，删除整页
+        else : 
+            #如果不止一页，关闭标志位
+            just_one_page = 0
+            if begin == 1 :
+                count_x = start_x
+                count_y = start_y
+                begin = 0
+            else :
+                count_x = 4
+                count_y = 5
+            while count_y != 0 :
+                while count_x != 0 :
+                    now_delete_x = base_x + add_x*(count_x-1)
+                    now_delete_y = base_y + add_y*(count_y-1)
+                    point = [now_delete_y,now_delete_x]
+                    print point
+                    print count_x
+                    print count_y
+                    phone_handle("click",point)
+
+                    phone_point = if_next('delete.png', 50)
+                    phone_handle("click",phone_point)
+
+                    get_now_picture()
+                    pos = compare('screen_out.png','delete.png')
+                    while pos :
+                        get_now_picture()
+                        pos = compare('screen_out.png','delete.png')
+                    count_x = count_x-1
+
+                    if count_x == stop_x and count_y == stop_y :
+                        print "delete over"
+                        quit()
+
+                count_x = 4                
+                count_y = count_y-1
+
+        swap_argument = [100,100,800,100,200]
+        phone_handle("swap",swap_argument)
+        page = page-1
+    
+    print "delete over"
+#分身编号
+start = 42
+stop = 21
+page = 4
 
 if __name__ == "__main__":
-
-  ip_txt = open("new_ip.txt")
-  ip = ip_txt.readlines()
-  for num in range(0,10):
-    print "ip change"
-#    phone_handle('keyevent','82')
-    phone_point = if_next('ip_change.png', 50)
-    phone_handle("click",phone_point)
-
-    phone_point = if_next('enter_setting.png', 50)
-    phone_handle("click",phone_point)
-
-    phone_point = if_next('ip_delet.png', 50)
-    phone_handle("click",phone_point)
-
-    phone_point = if_next('insert_ip.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",ip[num])
-    
-    phone_point = if_next('save.png', 50)
-    phone_handle("click",phone_point)
-
-    phone_point = if_next('connect.png', 50)
-    phone_handle("click",phone_point)
-
-    phone_point = if_next('sure_connect.png', 50)
-    phone_handle("click",phone_point)
-
-
-    print "return"
-    phone_handle('keyevent','82')
-    phone_point = if_next('return.png', 50)
-    phone_handle("click",phone_point)
+    delete_clone(13,13,1)
