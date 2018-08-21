@@ -169,6 +169,7 @@ def if_next_fixed(goal):
         pos = compare('screen_out.png',goal)
         get_now_picture()
         pos1 = compare('screen_out.png',goal)
+    return get_phone_point(pos)
 
 #登录判断标志
 logged = 0
@@ -183,130 +184,12 @@ if __name__ == "__main__":
     
     #########################################################################
 
-    print "register"
-
-    print "get number begain"
-    if logged == 0:
-        token = log_in()
-    phone_number = get_phone_number(project_id)
-
-    phone_point = if_next('register.png', 50)
-
-    print "register"
-    phone_point = if_next('register.png', 50)
-    phone_handle("click",phone_point)
-    
-    print "insert name"
-    phone_point = if_next('insert_name.png', 50)
-    phone_handle("click",phone_point)
-    time.sleep(1)
-    phone_point = if_next('down.png', 50)
-    if_next_fixed("down.png")
-    phone_handle("click",phone_point)
-    
-    name = ''
-    name_array = ["a","d","c",'u',"s","x","u","p","e"]
-    for ipp in range(0,4):
-        name = name + str(name_array[random.randint(0,8)])
-    for ipp in range(0,3):
-        name = name + str(random.randint(0,8))
-    phone_handle("insert", name)
-    print name 
-    
-    print "insert pwsswod"
-    phone_point = if_next('insert_pwsswod.png', 50)
-    phone_handle("click",phone_point)
-    
-    pwsswod = ''
-    for ipp in range(0,9):
-        pwsswod = pwsswod + str(random.randint(0,8))
-    phone_handle("insert", pwsswod)
-    print pwsswod 
-    
-    print 'sure_passwod'
-    phone_point = if_next('next.png', 50)
-    phone_handle("click",phone_point)
-    phone_point = if_next('sure_passwod.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert", pwsswod)
-
-    phone_point = if_next('send.png', 50)
-    phone_handle("click",phone_point)
-
-
-
-    '''
-    print "insert invite"
-    phone_point = if_next('insert_invite.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert","pweyve")
-    '''
-    print "insert number"
-    phone_point = if_next('phone_number.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",phone_number)
-
-    phone_point = if_next('down.png', 50)
-    phone_handle("click",phone_point)
-
-    print "send message"    
-    get_now_picture() 
-    phone_point = if_next('send_message.png', 50)
-    phone_handle("click",phone_point)
-
-    print "insert message"
-    message = get_message(phone_number,project_id)
-    phone_point = if_next('insert_message.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",message)
-
-    phone_point = if_next('down.png', 50)
-    phone_handle("click",phone_point)
-
-    print "complete"
-    phone_point = if_next('register_over.png', 50)
-    phone_handle("click",phone_point)
-
-    print "login"
-    phone_point = if_next('login_name.png', 50)
-    phone_handle("click",phone_point)
-    time.sleep(1)
-    phone_point = if_next('down.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",name)
-
-
-    phone_point = if_next('login_passwod.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",pwsswod)
-
-    phone_point = if_next('login.png', 50)
-    phone_handle("click",phone_point)
-
-    print "                                           register over"
-    
-################################################################
-    '''
-    print "ip return"
-
+    print "ip close"
     print 'enter'
-    phone_handle('keyevent','82')
-    phone_point = if_next('ip_return.png', 50)
+    phone_point = if_next('ip_change.png', 50)
     phone_handle("click",phone_point)
 
     print 'ip_disconnect'
-    phone_point = if_next('ip_disconnect.png', 50)
+    phone_point = if_next('sure_connect.png', 50)
+    phone_point = if_next_fixed('sure_connect.png')
     phone_handle("click",phone_point)
-
-    print 'sure_disconnect'
-    phone_point = if_next('sure_disconnect.png', 50)
-    phone_handle("click",phone_point)
-    '''
-    
-
-############################################################
-    print "return_fenshen"
-    phone_handle('keyevent','82')
-    phone_point = if_next('return.png', 50)
-    phone_handle("click",phone_point)
-    print num
