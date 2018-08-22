@@ -21,8 +21,8 @@ def resize_image(input_image,out_image,width,height,type):
 
 #从手机截屏，并发送到电脑
 def get_now_picture():
-    os.popen("adb -s bd5c889 shell screencap -p /sdcard/screen.png")
-    os.popen("adb -s bd5c889 pull /sdcard/screen.png")
+    os.popen("adb -s 9c9a817b shell screencap -p /sdcard/screen.png")
+    os.popen("adb -s 9c9a817b pull /sdcard/screen.png")
     #改变图片分辨率
     resize_image('screen.png','screen_out.png',516,919,'png')
 
@@ -33,8 +33,13 @@ def get_now_picture():
 #获取手机需要被点击的点(返回为需要点击的手机坐标的高宽数组)
 def get_phone_point(pos):
     #手机分辨率与图片分辨率，如更改，需修改
-    phone_heigh = 1280.0
-    phone_width = 720.0
+#oppo A57
+#    phone_heigh = 1280.0
+#    phone_width = 720.0
+
+#oppo r9s  mi6
+    phone_heigh = 1920.0
+    phone_width = 1080.0    
     picture_height = 919
     picture_width = 516
     resolution_list = []
@@ -64,18 +69,18 @@ def compare(source_picture,goal):
 #对手机进行操作
 def phone_handle(handle,argument):
     if handle == "click":
-        os.popen("adb -s bd5c889 shell input tap {x} {y}".format(x=argument[1],y=argument[0]) )
+        os.popen("adb -s 9c9a817b shell input tap {x} {y}".format(x=argument[1],y=argument[0]) )
     elif handle == 'insert':
 #        num_arry=[7,8,9,10,11,9,13,14,15,16]
 #        argu_leng = len(argument)
 #        for num in range(argu_leng):
 #            send_num = int(argument[num])            
 #            os.popen('adb shell input keyevent {date}'.format(date=num_arry[send_num]))
-        os.popen('adb -s bd5c889 shell input text {x}'.format(x=argument))
+        os.popen('adb -s 9c9a817b shell input text {x}'.format(x=argument))
     elif handle == 'keyevent':
-        os.popen("adb -s bd5c889 shell input keyevent {x}".format(x=argument) )
+        os.popen("adb -s 9c9a817b shell input keyevent {x}".format(x=argument) )
     elif handle == 'swap':
-        os.popen('adb -s bd5c889 shell input swipe {x} {y} {x1} {y1} {z}'.format(x=argument[0],y=argument[1],x1=argument[2],y1=argument[3],z=argument[4]))
+        os.popen('adb -s 9c9a817b shell input swipe {x} {y} {x1} {y1} {z}'.format(x=argument[0],y=argument[1],x1=argument[2],y1=argument[3],z=argument[4]))
         
 
 #随机机型选择
@@ -146,7 +151,8 @@ def if_next(goal,wait_time):
             print 'no next picture'
             print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
             print id
-            os.exit()
+            print "no exit picture"
+            quit()
             return 'false'
         no_match = "try next {x}".format(x=num)
         print no_match
@@ -156,28 +162,49 @@ def if_next(goal,wait_time):
         pos = compare('screen_out.png',goal)
     return get_phone_point(pos)
 
+#判断需要点击的目标是否固定
+def if_next_fixed(goal):
+    get_now_picture()
+    pos = compare('screen_out.png',goal)
+    get_now_picture()
+    pos1 = compare('screen_out.png',goal)
+    while pos != pos1 :
+        get_now_picture()
+        pos = compare('screen_out.png',goal)
+        get_now_picture()
+        pos1 = compare('screen_out.png',goal)
+    return get_phone_point(pos)
 
+#######################################################################
 #登录判断标志
 logged = 0
 #获取的token，重复使用
 token = "im first"
 #项目id
-project_id = 24239
+project_id = 18807
 #邀请码
-invite_number = 1567594
+invite_number = ["1bthaj","pweyve","70IR5M","2K876N","G0W8LB","9qvxtr"]
+invite_count = 3
 #ip池 361 个
 ip = ""
+#储存已使用ip数量
+ip_number = 72
 
 if __name__ == "__main__":
-
+  
   ip_txt = open("new_ip.txt")
   ip = ip_txt.readlines()
 
-  for  num in range(22,100) :
+  for  num in range(1,100) :
     
     print "+ begain"
     get_now_picture()
     phone_point = if_next('+.png', 50)
+    phone_handle("click",phone_point)
+
+    print "to_position begain"
+    get_now_picture()
+    phone_point = if_next('position.png', 50)
     phone_handle("click",phone_point)
 
     print "make begain"
@@ -235,158 +262,264 @@ if __name__ == "__main__":
     get_now_picture() 
     phone_point = if_next('bigain_make.png', 50)
     phone_handle("click",phone_point)
+#oppo
+#    print "sure begain"
+#    phone_point = if_next('sure.png', 50)
+#    phone_handle("insert","5664968")
 
-    print "sure begain"
-    phone_point = if_next('sure.png', 50)
-    phone_handle("insert","5664968")
-
-    print "install0 begain"    
-    get_now_picture() 
-    phone_point = if_next('install0.png', 50)
+    print "install begain"    
+    phone_point = if_next('install.png', 50)
+    time.sleep(1)
     phone_handle("click",phone_point)
     
-    print "install begain"    
-    get_now_picture() 
-    phone_point = if_next('install.png', 50)
-    phone_handle("click",phone_point)
     pos = compare('screen_out.png','install.png')
     while pos != None:
-        phone_point = if_next('install.png', 50)
-        phone_handle("click",phone_point)
         get_now_picture()
         pos = compare('screen_out.png','install.png')
     
-    print "complete begain"
-    phone_handle('click',[100,100])
-    phone_point = if_next('complete.png', 50)
-    pos = compare('screen_out.png','allow.png')
-    while pos == None:
-        phone_point = if_next('complete.png', 50)
-        phone_handle("click",phone_point)
-        get_now_picture()
-        pos = compare('screen_out.png','allow.png')
-        print pos
-    '''
-    print "allow begain"    
-    get_now_picture() 
-    phone_point = if_next('allow.png', 50)
+    print "open begain"
+    phone_point = if_next('open.png', 50)
+    time.sleep(1)
     phone_handle("click",phone_point)
-    '''
+    time.sleep(6)
     print "                                         creat over"
     
 
-    
+######################################################################  
     print "ip change"
 
     print 'enter'
     phone_handle('keyevent','82')
     phone_point = if_next('ip_change.png', 50)
     phone_handle("click",phone_point)
-
+    time.sleep(2)
+    
     print 'setting'
     phone_point = if_next('enter_setting.png', 50)
+    if_next_fixed('enter_setting.png')
     phone_handle("click",phone_point)
+    time.sleep(1)
 
     print 'ip_delet'
     phone_point = if_next('ip_delet.png', 50)
+    time.sleep(1)
     phone_handle("click",phone_point)
-
-    print 'insert_ip'
-    phone_point = if_next('insert_ip.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",ip[num])
+    phone_point = if_next('ip_delet1.png', 50)
+    for i in range(0,15):
+        phone_handle("click",phone_point)
     
+    print "insert ip"
+    leng = len(ip[ip_number])
+    for ipp in range(leng):
+        phone_handle("insert", ip[ip_number][ipp])
+    print "                                          ip_number = {}".format(ip_number) 
+    ip_number = ip_number + 1
+
+
     print 'save'
     phone_point = if_next('save.png', 50)
     phone_handle("click",phone_point)
-
+    time.sleep(1)
+    
     print 'connect'
     phone_point = if_next('connect.png', 50)
     phone_handle("click",phone_point)
-
+    time.sleep(3)
+    
+    get_now_picture()
     print 'sure_connect'
-    phone_point = if_next('sure_connect.png', 50)
-    phone_handle("click",phone_point)
+    pos = compare('screen_out.png','sure_connect.png')
+    times = 0
+    while pos == None:
+        if times == 3 :
+            print 'setting'
+            phone_point = if_next('enter_setting.png', 50)
+            phone_handle("click", phone_point)
 
-    phone_point = if_next('ip_success.png', 50)
+            print 'ip_delet'
+            phone_point = if_next('ip_delet.png', 50)
+            phone_handle("click", phone_point)
+            phone_point = if_next('ip_delet1.png', 50)
+            for i in range(0, 15):
+                phone_handle("click", phone_point)
 
+            leng = len(ip[ip_number])
+            for ipp in range(leng):
+                phone_handle("insert", ip[ip_number][ipp])
+            ip_number = ip_number + 1
+            print "                                {}".format("ip_number") 
+
+            print 'save'
+            phone_point = if_next('save.png', 50)
+            phone_handle("click", phone_point)
+            time.sleep(1)
+
+            print 'connect'
+            phone_point = if_next('connect.png', 50)
+            phone_handle("click", phone_point)
+            time.sleep(4)
+
+            times = 0
+
+        get_now_picture()
+        pos = compare('screen_out.png','sure_connect.png')
+        print times
+        times = times + 1
+
+    print "                                          ip success"
+
+    
     print 'return app'
     phone_handle('keyevent','82')
+    time.sleep(1)
     phone_point = if_next('return_app.png', 50)
+    phone_point = if_next_fixed('return_app.png')
     phone_handle("click",phone_point)
 
-
+  
 #########################################################################
+
+    print "register"
+
+    
+
+    print "register"
+    phone_point = if_next('register.png', 50)
+    phone_handle("click",phone_point)
+    time.sleep(2)
+
+    print "insert name"
+    click_point = [300,750]
+    phone_handle("click",click_point)
+    phone_point = if_next('insert_name.png', 50)
+    phone_handle("click",phone_point)
+    time.sleep(1)
+    phone_point = if_next('down.png', 50)
+    if_next_fixed("down.png")
+    phone_handle("click",phone_point)
+    
+    name = ''
+    name_array = ["a","d","c",'u',"s","x","u","p","e"]
+    for ipp in range(0,4):
+        name = name + str(name_array[random.randint(0,8)])
+    for ipp in range(0,3):
+        name = name + str(random.randint(0,8))
+    phone_handle("insert", name)
+    print name 
+    
+    print "insert pwsswod"
+    phone_point = if_next('insert_pwsswod.png', 50)
+    phone_handle("click",phone_point)
+    
+    pwsswod = ''
+    for ipp in range(0,2):
+        pwsswod = pwsswod + str(name_array[random.randint(0,8)])
+    for ipp in range(0,7):
+        pwsswod = pwsswod + str(random.randint(0,8))
+    leng = len(pwsswod)
+    for ipp in range(leng):
+        phone_handle("insert", pwsswod[ipp])
+    print pwsswod 
+    
+    
+    print 'sure_passwod'
+    phone_point = if_next('next.png', 50)
+    phone_handle("click",phone_point)
+    phone_point = if_next('sure_passwod.png', 50)
+    phone_handle("click",phone_point)
+    leng = len(pwsswod)
+    for ipp in range(leng):
+        phone_handle("insert", pwsswod[ipp])
+    print pwsswod 
+
+    phone_point = if_next('send.png', 50)
+    phone_handle("click",phone_point)
 
 
     print "get number begain"
     if logged == 0:
         token = log_in()
-#        logged = 1
     phone_number = get_phone_number(project_id)
 
+    print "insert invite"
+    phone_point = if_next('insert_invite.png', 50)
+    phone_handle("click",phone_point)
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
+    phone_handle("insert",invite_number[invite_count])
+    invite_count = invite_count + 1
+    if invite_count > 5:
+        invite_count = 0
+
+    print "insert number"
     phone_point = if_next('phone_number.png', 50)
     phone_handle("click",phone_point)
-    print "insert number"
     phone_handle("insert",phone_number)
+
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
 
     print "send message"    
     get_now_picture() 
-    phone_point = if_next('send.png', 50)
+    phone_point = if_next('send_message.png', 50)
     phone_handle("click",phone_point)
-    phone_point = if_next('if_swap.png', 50)
-    time.sleep(1)
-    
-    pos = compare('screen_out.png','if_swap.png')   
-    while pos != None :
-        swap_road = [215,830,510,830,4000]
-        phone_handle("swap",swap_road)
-        get_now_picture()
-        pos = compare('screen_out.png','if_swap.png')
 
-    print "insert invite"
-    phone_point = if_next('invite.png', 50)
-    phone_handle("click",phone_point)
-    phone_point = if_next('down.png', 50)
-    phone_handle("click",phone_point)
-    phone_handle("insert",invite_number)
-
-    print "waite message"
+    print "insert message"
     message = get_message(phone_number,project_id)
-    phone_point = if_next('security.png', 50)
-    phone_handle("click",phone_point)
-    phone_point = if_next('down.png', 50)
+    phone_point = if_next('insert_message.png', 50)
     phone_handle("click",phone_point)
     phone_handle("insert",message)
-    
-    phone_point = if_next('login.png', 50)
+
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
+
+    print "complete"
+    phone_point = if_next('register_over.png', 50)
+    phone_handle("click",phone_point)
+
+    print "login"
+    print "login name"
+    phone_point = if_next('login_name.png', 50)
     phone_handle("click",phone_point)
     time.sleep(1)
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
+    phone_handle("insert",name)
+
+    print "login passwod"
+    phone_point = if_next('login_passwod.png', 50)
+    phone_handle("click",phone_point)
+    phone_handle("insert",pwsswod)
+
+    print "send"
+    phone_point = if_next('send.png', 50)
+    phone_handle("click",phone_point)
+    time.sleep(1)
+
+    print "                                           register over"
     
-    print num
-    print "                                            over"
-    
-
-
-    print "ip return"
-
-    print 'enter'
+################################################################
+    print "delete fenshen"
     phone_handle('keyevent','82')
-    phone_point = if_next('ip_return.png', 50)
+    swap_point = [400,1000,100,1000,100]
+    phone_handle("swap",swap_point)
+    
+    print "ip close"
+    print 'enter'
+    phone_point = if_next('ip_change.png', 50)
+    phone_point = if_next_fixed('ip_change.png')
     phone_handle("click",phone_point)
 
     print 'ip_disconnect'
-    phone_point = if_next('ip_disconnect.png', 50)
-    phone_handle("click",phone_point)
-
-    print 'sure_disconnect'
-    phone_point = if_next('sure_disconnect.png', 50)
+    phone_point = if_next('sure_connect.png', 50)
+    phone_point = if_next_fixed('sure_connect.png')
     phone_handle("click",phone_point)
 
     
 
-
+############################################################
     print "return_fenshen"
     phone_handle('keyevent','82')
     phone_point = if_next('return.png', 50)
     phone_handle("click",phone_point)
+    print num

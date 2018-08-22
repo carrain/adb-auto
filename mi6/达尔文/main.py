@@ -183,11 +183,12 @@ token = "im first"
 #项目id
 project_id = 18807
 #邀请码
-invite_number = ["1bthaj","pweyve"]
+invite_number = ["1bthaj","pweyve","70IR5M","2K876N","G0W8LB"]
+invite_count = 4
 #ip池 361 个
 ip = ""
 #储存已使用ip数量
-ip_number = 23
+ip_number = 74
 
 if __name__ == "__main__":
   
@@ -443,7 +444,12 @@ if __name__ == "__main__":
     print "insert invite"
     phone_point = if_next('insert_invite.png', 50)
     phone_handle("click",phone_point)
-    phone_handle("insert",invite_number[0])
+    phone_point = if_next('down.png', 50)
+    phone_handle("click",phone_point)
+    phone_handle("insert",invite_number[invite_count])
+    invite_count = invite_count + 1
+    if invite_count > 4:
+        invite_count = 0
 
     print "insert number"
     phone_point = if_next('phone_number.png', 50)
